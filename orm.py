@@ -1,26 +1,43 @@
-class Model:
+from typing import Any
+
+
+class Model():
     def __init__(self, *args, **kwargs): 
         # Get all class attributes aside inbuilt attributes
         attrs=[i for i in dir(self) if i[0]!='_']
-
         for attribute in attrs:
-            print(attribute)
-            self.__dict__[attribute]=getattr(self,attribute)
+            # Ignore overriden getattribute in this class
+            self.__dict__[attribute]=object.__getattribute__(self,attribute)
+            
+
+    #Return Field value instead of object reference
+    def __getattribute__(self, __name: str,**kwargs) -> Any:
+        attr=object.__getattribute__(self,__name)
+        if(isinstance(attr,Field)):
+            return attr.value
+        else:
+            return attr
+
 
     #Make sure when setting fields the type matches the field
     def __setattr__(self, __name: str, __value) -> None:
-        if(type(self.__dict__[__name]) is CharField):
-            if(isinstance(__value,str)):
-                #Set the value of field from object attribute dictionary
-                self.__dict__[__name].value=__value
+
+        if(isinstance(self.__dict__[__name],Field)):
+            #Set the value of field from object attribute dictionary
+            self.__dict__[__name].value=__value
+            
 
 class Field():
     def __init__(self,**kwargs):
+        
         if('value' in kwargs):
             self.value=kwargs['value']
+    
+    
 
 class CharField(Field):  
     value=''
+    
 
 class IntField(Field):  
     value=0
@@ -32,13 +49,14 @@ class Person(Model):
     
 
     
+    
 
+    
     
 
 
     
 
 a=Person()
-
-
-print(a.name.value)
+a.name="DWW"
+print(a.name)
