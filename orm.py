@@ -5,7 +5,11 @@ class Model():
         attrs=[i for i in dir(self) if i[0]!='_']
         for attribute in attrs:
             # Ignore overriden getattribute in this class
+
             self.__dict__[attribute]=object.__getattribute__(self,attribute)
+        
+        # Add all model fields into the ModelObject attributes
+        self.__dict__['objects']=ModelObject(model_name=type(self).__name__,**(self.__dict__))
             
             
 
@@ -25,18 +29,36 @@ class Model():
             #Set the value of field from object attribute dictionary
             self.__dict__[__name].value=__value
 
-    def all(self):
-        # Get table name using model name 
-        name=get_plural(type(self).__name__)
-        query=f'SELECT * FROM {name}'
-        print(query)
 
+
+class ModelObject:
+    def __init__(self,**kwargs) -> None:
+        for key in kwargs:
+            self.__dict__[key]=kwargs[key]
+        
+        self.__dict__['objects']=[]
+        print(self.__dict__)
+
+    def all(self):
+        if(len(self.objects)==0):
+            name=get_plural(self.model_name)
+            query=f'SELECT * FROM {name}'
+
+
+
+        else:
+            return self.objects
+
+        
             
 class Field():
     def __init__(self,**kwargs):
         
         if('value' in kwargs):
+            print(kwargs)
             self.value=kwargs['value']
+        else:
+            print(self.value)
     
     
 
@@ -49,7 +71,7 @@ class IntField(Field):
 
 
 class Person(Model):
-    name=CharField(value='ds')
+    name=CharField()
 
 
 def create_database(model):
@@ -75,4 +97,5 @@ def get_plural(name):
 
 
 # create_database(Person)
-Person().all()
+person=Person(name='David')
+print(person.objects.model_name)
